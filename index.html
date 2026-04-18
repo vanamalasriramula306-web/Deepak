@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyHub – Your Personal Study Space</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161a23;
+    --surface2: #1e2333;
+    --border: #2a3050;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --gold: #f5c842;
+    --green: #3dd68c;
+    --text: #e8eaf6;
+    --muted: #7b82a8;
+    --radius: 14px;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* SIDEBAR */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 260px; min-width: 260px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 24px 16px; gap: 8px; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+  }
+  .logo { font-family: var(--font-head); font-size: 22px; font-weight: 800; color: var(--text); padding: 0 8px 20px; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
+  .logo span { background: var(--accent); border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 1.5px; color: var(--muted); padding: 12px 8px 4px; text-transform: uppercase; }
+  .nav-btn {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px;
+    cursor: pointer; font-family: var(--font-body); font-size: 14px; font-weight: 500; color: var(--muted);
+    border: none; background: none; width: 100%; text-align: left; transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: var(--accent); color: #fff; }
+  .nav-btn .icon { font-size: 16px; width: 20px; text-align: center; }
+  .subject-list { display: flex; flex-direction: column; gap: 4px; }
+  .subject-item {
+    display: flex; align-items: center; justify-content: space-between; padding: 8px 12px;
+    border-radius: 8px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.2s;
+  }
+  .subject-item:hover { background: var(--surface2); color: var(--text); }
+  .subject-item.active { color: var(--accent); font-weight: 500; }
+  .subject-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .add-subject-btn {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px;
+    cursor: pointer; font-size: 13px; color: var(--muted); border: 1px dashed var(--border); background: none;
+    width: 100%; margin-top: 4px; transition: all 0.2s; font-family: var(--font-body);
+  }
+  .add-subject-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* MAIN */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .topbar-title { font-family: var(--font-head); font-size: 18px; font-weight: 700; }
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 9px;
+    font-family: var(--font-body); font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.18s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #5a52e0; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-gold { background: var(--gold); color: #111; }
+  .btn-gold:hover { background: #e0b430; }
+  .btn-green { background: var(--green); color: #111; }
+  .btn-danger { background: var(--accent2); color: #fff; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 4px; padding: 16px 28px 0; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .tab {
+    padding: 8px 18px 12px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted);
+    border-bottom: 2px solid transparent; transition: all 0.2s; font-family: var(--font-body); background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* CONTENT AREA */
+  .content { flex: 1; padding: 28px; overflow-y: auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* NOTES */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 20px; }
+  .note-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; position: relative; transition: all 0.2s; cursor: default;
+  }
+  .note-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.15); }
+  .note-card.important { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  .note-card .important-badge {
+    display: inline-flex; align-items: center; gap: 4px; background: var(--gold); color: #111;
+    font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-bottom: 8px; letter-spacing: 0.5px;
+  }
+  .note-title { font-family: var(--font-head); font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .note-body { font-size: 13px; color: var(--muted); line-height: 1.7; white-space: pre-wrap; }
+  .note-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .note-date { font-size: 11px; color: var(--muted); }
+  .note-actions { display: flex; gap: 6px; }
+  .icon-btn { background: none; border: none; cursor: pointer; padding: 4px 6px; border-radius: 6px; font-size: 14px; transition: background 0.15s; }
+  .icon-btn:hover { background: var(--surface2); }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; margin: 2px; }
+
+  /* EDITOR */
+  .editor-area { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; }
+  .editor-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+  .editor-input, .editor-textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 9px;
+    color: var(--text); font-family: var(--font-body); padding: 12px 16px; font-size: 14px; outline: none; transition: border 0.2s;
+  }
+  .editor-input:focus, .editor-textarea:focus { border-color: var(--accent); }
+  .editor-textarea { min-height: 140px; resize: vertical; line-height: 1.7; }
+  .editor-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .editor-row > * { flex: 1; min-width: 160px; }
+  label { font-size: 12px; font-weight: 600; color: var(--muted); display: block; margin-bottom: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* HIGHLIGHT MARKS */
+  .highlight { background: rgba(245, 200, 66, 0.25); border-bottom: 2px solid var(--gold); border-radius: 2px; cursor: pointer; }
+  .highlight:hover { background: rgba(245, 200, 66, 0.4); }
+
+  /* AI CHAT */
+  .chat-container { display: flex; flex-direction: column; height: calc(100vh - 200px); }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px 0; display: flex; flex-direction: column; gap: 16px; }
+  .chat-msg { display: flex; gap: 12px; align-items: flex-start; animation: fadeUp 0.3s ease; }
+  .chat-msg.user { flex-direction: row-reverse; }
+  .chat-avatar { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .chat-avatar.ai { background: var(--accent); }
+  .chat-avatar.user { background: var(--accent2); }
+  .chat-bubble {
+    max-width: 70%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.7;
+    background: var(--surface); border: 1px solid var(--border);
+  }
+  .chat-msg.user .chat-bubble { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chat-input-area { display: flex; gap: 10px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .chat-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 12px 16px; color: var(--text); font-family: var(--font-body); font-size: 14px; outline: none; resize: none; height: 50px;
+  }
+  .chat-input:focus { border-color: var(--accent); }
+  .typing-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--muted); margin: 0 2px; animation: bounce 1.2s infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+  /* MEDIA */
+  .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; }
+  .media-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: all 0.2s; }
+  .media-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .media-thumb { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+  .media-thumb-placeholder { width: 100%; aspect-ratio: 16/9; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 32px; }
+  .media-info { padding: 12px; }
+  .media-name { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .media-type { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .upload-zone {
+    border: 2px dashed var(--border); border-radius: var(--radius); padding: 40px;
+    text-align: center; cursor: pointer; transition: all 0.2s; margin-bottom: 20px;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(108,99,255,0.05); }
+  .upload-zone .upload-icon { font-size: 40px; margin-bottom: 12px; }
+  .upload-zone p { color: var(--muted); font-size: 14px; }
+  .upload-zone strong { color: var(--accent); }
+
+  /* EXAM */
+  .exam-setup { max-width: 560px; }
+  .exam-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; margin-bottom: 16px; }
+  .question-num { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .question-text { font-family: var(--font-head); font-size: 16px; font-weight: 600; margin-bottom: 20px; line-height: 1.5; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option-btn {
+    padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface2);
+    color: var(--text); font-family: var(--font-body); font-size: 14px; cursor: pointer; text-align: left; transition: all 0.2s;
+  }
+  .option-btn:hover:not(:disabled) { border-color: var(--accent); }
+  .option-btn.correct { border-color: var(--green); background: rgba(61,214,140,0.1); color: var(--green); }
+  .option-btn.wrong { border-color: var(--accent2); background: rgba(255,101,132,0.1); color: var(--accent2); }
+  .option-btn:disabled { cursor: default; }
+  .score-card { text-align: center; padding: 40px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); }
+  .score-big { font-family: var(--font-head); font-size: 72px; font-weight: 800; color: var(--accent); line-height: 1; }
+  .score-label { color: var(--muted); font-size: 16px; margin-top: 8px; }
+  .progress-bar { height: 4px; background: var(--surface2); border-radius: 2px; margin-bottom: 24px; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.4s ease; }
+  .select-input {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 9px; color: var(--text);
+    font-family: var(--font-body); padding: 10px 14px; font-size: 14px; outline: none; appearance: none; cursor: pointer;
+  }
+  .select-input:focus { border-color: var(--accent); }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 32px;
+    width: min(520px, 95vw); max-height: 90vh; overflow-y: auto; transform: translateY(20px); transition: transform 0.2s;
+  }
+  .modal-overlay.show .modal { transform: translateY(0); }
+  .modal-title { font-family: var(--font-head); font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* TOAST */
+  .toast-container { position: fixed; bottom: 28px; right: 28px; display: flex; flex-direction: column; gap: 10px; z-index: 2000; }
+  .toast {
+    background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 20px;
+    font-size: 13px; display: flex; align-items: center; gap: 10px; min-width: 240px; max-width: 360px;
+    animation: slideIn 0.3s ease; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .toast.success { border-color: var(--green); }
+  .toast.error { border-color: var(--accent2); }
+
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 60px 20px; }
+  .empty-icon { font-size: 52px; margin-bottom: 16px; }
+  .empty-state h3 { font-family: var(--font-head); font-size: 20px; margin-bottom: 8px; }
+  .empty-state p { color: var(--muted); font-size: 14px; max-width: 300px; margin: 0 auto; }
+
+  /* STATS ROW */
+  .stats-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; flex: 1; min-width: 130px; }
+  .stat-num { font-family: var(--font-head); font-size: 28px; font-weight: 800; }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* VIDEO IFRAME */
+  .video-embed-container { position: relative; padding-top: 56.25%; border-radius: 12px; overflow: hidden; }
+  .video-embed-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+
+  /* SEARCH BAR */
+  .search-bar {
+    width: 260px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 14px 8px 36px; color: var(--text); font-family: var(--font-body); font-size: 13px; outline: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237b82a8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: 12px center;
+  }
+  .search-bar:focus { border-color: var(--accent); }
+
+  /* IMPORTANT FILTER */
+  .filter-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* RESPONSIVE */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .notes-grid { grid-template-columns: 1fr; }
+    .chat-bubble { max-width: 85%; }
+  }
+
+  .note-content-rendered mark { background: rgba(245,200,66,0.3); border-bottom: 2px solid var(--gold); padding: 0 2px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo"><span>📚</span> StudyHub</div>
+
+    <div class="nav-section">Navigation</div>
+    <button class="nav-btn active" onclick="switchPage('dashboard')"><span class="icon">🏠</span> Dashboard</button>
+    <button class="nav-btn" onclick="switchPage('notes')"><span class="icon">📝</span> My Notes</button>
+    <button class="nav-btn" onclick="switchPage('ai')"><span class="icon">🤖</span> AI Tutor</button>
+    <button class="nav-btn" onclick="switchPage('media')"><span class="icon">🖼️</span> Media</button>
+    <button class="nav-btn" onclick="switchPage('exam')"><span class="icon">📋</span> Take Exam</button>
+
+    <div class="nav-section" style="margin-top:16px">Subjects</div>
+    <div class="subject-list" id="subjectList"></div>
+    <button class="add-subject-btn" onclick="openAddSubject()">＋ Add Subject</button>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-actions">
+        <input class="search-bar" type="text" placeholder="Search notes…" oninput="searchNotes(this.value)" id="searchInput">
+        <button class="btn btn-primary" onclick="openNewNote()">＋ New Note</button>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="panel active" id="page-dashboard">
+        <div class="stats-row" id="statsRow"></div>
+        <h2 style="font-family:var(--font-head);font-size:17px;margin-bottom:16px">📌 Important Notes</h2>
+        <div class="notes-grid" id="importantGrid"></div>
+        <h2 style="font-family:var(--font-head);font-size:17px;margin:28px 0 16px">🕐 Recent Notes</h2>
+        <div class="notes-grid" id="recentGrid"></div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="panel" id="page-notes">
+        <div class="filter-row">
+          <button class="btn btn-ghost" id="filterAll" onclick="setFilter('all')" style="background:var(--accent);color:#fff;border-color:var(--accent)">All</button>
+          <button class="btn btn-ghost" id="filterImportant" onclick="setFilter('important')">⭐ Important</button>
+          <select class="select-input" id="filterSubject" onchange="renderNotes()" style="min-width:140px">
+            <option value="">All Subjects</option>
+          </select>
+        </div>
+        <div class="notes-grid" id="notesGrid"></div>
+      </div>
+
+      <!-- AI TUTOR -->
+      <div class="panel" id="page-ai">
+        <div class="chat-container">
+          <div style="background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(255,101,132,0.1));border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+            <div style="font-size:28px">🤖</div>
+            <div>
+              <div style="font-family:var(--font-head);font-weight:700;margin-bottom:2px">AI Study Tutor</div>
+              <div style="font-size:12px;color:var(--muted)">Ask anything about your notes, subjects, or topics. I can explain concepts, quiz you, and more!</div>
+            </div>
+          </div>
+          <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg">
+              <div class="chat-avatar ai">🤖</div>
+              <div class="chat-bubble">Hello! I'm your AI Study Tutor. Ask me anything about your notes, or any topic you're studying. I can explain concepts, create summaries, help you understand difficult topics, or quiz you! 🎓</div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <textarea class="chat-input" id="chatInput" placeholder="Ask a question about your notes or any topic…" rows="1" onkeydown="handleChatKey(event)"></textarea>
+            <button class="btn btn-primary" onclick="sendChat()" id="sendBtn" style="height:50px;width:50px;padding:0;display:flex;align-items:center;justify-content:center;font-size:18px">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEDIA -->
+      <div class="panel" id="page-media">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="e=>{e.preventDefault();this.classList.add('drag')}" ondragleave="this.classList.remove('drag')" ondrop="handleDrop(event)">
+          <div class="upload-icon">📂</div>
+          <p>Drop images or videos here, or <strong>click to upload</strong></p>
+          <p style="font-size:12px;margin-top:6px;color:var(--muted)">Supports JPG, PNG, GIF, MP4, WebM, YouTube links</p>
+        </div>
+        <input type="file" id="fileInput" style="display:none" multiple accept="image/*,video/*" onchange="handleFileUpload(event)">
+        <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;flex-wrap:wrap">
+          <div style="font-family:var(--font-head);font-size:16px;font-weight:700">📎 Add YouTube / Video URL</div>
+          <input class="editor-input" id="videoUrlInput" placeholder="Paste YouTube URL or video link…" style="max-width:360px;margin-bottom:0">
+          <button class="btn btn-primary" onclick="addVideoUrl()">Add Video</button>
+        </div>
+        <div class="media-grid" id="mediaGrid"></div>
+      </div>
+
+      <!-- EXAM -->
+      <div class="panel" id="page-exam">
+        <div id="examSetup" class="exam-setup">
+          <div class="editor-area">
+            <div style="font-family:var(--font-head);font-size:20px;font-weight:700;margin-bottom:4px">🎓 Generate Exam</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:20px">AI will create a custom exam from your notes or any topic</div>
+            <div class="editor-row">
+              <div>
+                <label>Topic / Subject</label>
+                <input class="editor-input" id="examTopic" placeholder="e.g., Photosynthesis, World War II…">
+              </div>
+              <div>
+                <label>Number of Questions</label>
+                <select class="select-input" id="examCount" style="width:100%">
+                  <option value="5">5 Questions</option>
+                  <option value="10" selected>10 Questions</option>
+                  <option value="15">15 Questions</option>
+                  <option value="20">20 Questions</option>
+                </select>
+              </div>
+            </div>
+            <div class="editor-row">
+              <div>
+                <label>Difficulty</label>
+                <select class="select-input" id="examDifficulty" style="width:100%">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+              <div>
+                <label>Type</label>
+                <select class="select-input" id="examType" style="width:100%">
+                  <option value="mcq">Multiple Choice</option>
+                  <option value="truefalse">True / False</option>
+                  <option value="mixed">Mixed</option>
+                </select>
+              </div>
+            </div>
+            <div style="margin-bottom:16px">
+              <label>Custom Instructions (optional)</label>
+              <input class="editor-input" id="examInstructions" placeholder="e.g., Focus on dates and events, include tricky questions…">
+            </div>
+            <button class="btn btn-gold" onclick="generateExam()" id="generateBtn" style="width:100%;justify-content:center;padding:14px;font-size:15px">⚡ Generate Exam with AI</button>
+          </div>
+        </div>
+        <div id="examActive" style="display:none;max-width:680px">
+          <div class="progress-bar"><div class="progress-fill" id="examProgress"></div></div>
+          <div id="examQuestions"></div>
+          <div style="display:flex;gap:12px;margin-top:20px">
+            <button class="btn btn-primary" onclick="submitExam()" id="submitExamBtn">Submit Exam</button>
+            <button class="btn btn-ghost" onclick="resetExam()">✕ Cancel</button>
+          </div>
+        </div>
+        <div id="examResult" style="display:none">
+          <div class="score-card">
+            <div class="score-big" id="scoreDisplay">0%</div>
+            <div class="score-label" id="scoreLabel">Calculating…</div>
+            <div style="margin-top:24px;display:flex;gap:12px;justify-content:center">
+              <button class="btn btn-primary" onclick="reviewExam()">📖 Review Answers</button>
+              <button class="btn btn-ghost" onclick="resetExam()">🔄 New Exam</button>
+            </div>
+          </div>
+          <div id="reviewSection" style="display:none;margin-top:24px"></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- NEW NOTE MODAL -->
+<div class="modal-overlay" id="noteModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">📝 New Note</div>
+    <div class="editor-row">
+      <div>
+        <label>Title</label>
+        <input class="editor-input" id="noteTitle" placeholder="Note title…">
+      </div>
+      <div>
+        <label>Subject</label>
+        <select class="select-input" id="noteSubject" style="width:100%"><option value="">General</option></select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Content</label>
+      <textarea class="editor-textarea" id="noteContent" placeholder="Write your notes here…&#10;&#10;TIP: Wrap text with ==text== to highlight it as important!" style="min-height:180px"></textarea>
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Tags (comma separated)</label>
+      <input class="editor-input" id="noteTags" placeholder="e.g., biology, chapter3, revision">
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:4px">
+      <input type="checkbox" id="noteImportant" style="accent-color:var(--gold);width:16px;height:16px">
+      <span style="font-size:13px;font-weight:500;color:var(--text)">⭐ Mark as Important</span>
+    </label>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('noteModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD SUBJECT MODAL -->
+<div class="modal-overlay" id="subjectModal">
+  <div class="modal">
+    <div class="modal-title">🎨 Add Subject</div>
+    <div style="margin-bottom:12px">
+      <label>Subject Name</label>
+      <input class="editor-input" id="subjectName" placeholder="e.g., Biology, Math, History…">
+    </div>
+    <div style="margin-bottom:12px">
+      <label>Color</label>
+      <div style="display:flex;gap:10px;flex-wrap:wrap" id="colorPicker">
+        <div class="color-swatch" data-color="#6c63ff" style="width:30px;height:30px;border-radius:50%;background:#6c63ff;cursor:pointer;border:3px solid #fff;outline:2px solid #6c63ff"></div>
+        <div class="color-swatch" data-color="#ff6584" style="width:30px;height:30px;border-radius:50%;background:#ff6584;cursor:pointer"></div>
+        <div class="color-swatch" data-color="#3dd68c" style="width:30px;height:30px;border-radius:50%;background:#3dd68c;cursor:pointer"></div>
+        <div class="color-swatch" data-color="#f5c842" style="width:30px;height:30px;border-radius:50%;background:#f5c842;cursor:pointer"></div>
+        <div class="color-swatch" data-color="#00c8ff" style="width:30px;height:30px;border-radius:50%;background:#00c8ff;cursor:pointer"></div>
+        <div class="color-swatch" data-color="#ff9a3c" style="width:30px;height:30px;border-radius:50%;background:#ff9a3c;cursor:pointer"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('subjectModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSubject()">Add Subject</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE VIEW MODAL -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal" style="max-width:640px">
+    <div id="viewModalContent"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('viewModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========================
+// DATA STORE
+// ========================
+let state = {
+  notes: JSON.parse(localStorage.getItem('sh_notes') || '[]'),
+  subjects: JSON.parse(localStorage.getItem('sh_subjects') || '[{"id":"s1","name":"General","color":"#6c63ff"}]'),
+  media: JSON.parse(localStorage.getItem('sh_media') || '[]'),
+  currentPage: 'dashboard',
+  noteFilter: 'all',
+  editingNoteId: null,
+  selectedColor: '#6c63ff',
+  examData: null,
+  userAnswers: {},
+};
+
+function save() {
+  localStorage.setItem('sh_notes', JSON.stringify(state.notes));
+  localStorage.setItem('sh_subjects', JSON.stringify(state.subjects));
+  localStorage.setItem('sh_media', JSON.stringify(state.media));
+}
+
+// ========================
+// NAVIGATION
+// ========================
+function switchPage(page) {
+  state.currentPage = page;
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => { if(b.getAttribute('onclick').includes(page)) b.classList.add('active'); });
+  const titles = { dashboard: 'Dashboard', notes: 'My Notes', ai: 'AI Tutor', media: 'Media Library', exam: 'Take Exam' };
+  document.getElementById('pageTitle').textContent = titles[page] || page;
+  document.getElementById('searchInput').style.display = page === 'notes' || page === 'dashboard' ? '' : 'none';
+  if(page === 'dashboard') renderDashboard();
+  if(page === 'notes') renderNotes();
+  if(page === 'media') renderMedia();
+}
+
+// ========================
+// SUBJECTS
+// ========================
+function renderSubjects() {
+  const list = document.getElementById('subjectList');
+  list.innerHTML = state.subjects.map(s => `
+    <div class="subject-item" onclick="filterBySubject('${s.id}')">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="subject-dot" style="background:${s.color}"></div>
+        <span style="font-size:13px">${s.name}</span>
+      </div>
+      <span style="font-size:11px;color:var(--muted)">${state.notes.filter(n=>n.subject===s.id).length}</span>
+    </div>
+  `).join('');
+
+  // Update subject selects
+  ['noteSubject','filterSubject'].forEach(id => {
+    const sel = document.getElementById(id);
+    if(!sel) return;
+    const val = sel.value;
+    if(id === 'filterSubject') {
+      sel.innerHTML = '<option value="">All Subjects</option>' + state.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    } else {
+      sel.innerHTML = state.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
+    sel.value = val;
+  });
+}
+
+function openAddSubject() {
+  state.selectedColor = '#6c63ff';
+  document.getElementById('subjectName').value = '';
+  document.querySelectorAll('.color-swatch').forEach(s => s.style.outline = '');
+  document.querySelector('.color-swatch').style.outline = '2px solid ' + state.selectedColor;
+  openModal('subjectModal');
+}
+
+function saveSubject() {
+  const name = document.getElementById('subjectName').value.trim();
+  if(!name) { toast('Enter a subject name', 'error'); return; }
+  const subject = { id: 's' + Date.now(), name, color: state.selectedColor };
+  state.subjects.push(subject);
+  save();
+  renderSubjects();
+  closeModal('subjectModal');
+  toast('Subject "' + name + '" added! 🎉');
+}
+
+document.getElementById('colorPicker').addEventListener('click', e => {
+  const swatch = e.target.closest('.color-swatch');
+  if(!swatch) return;
+  state.selectedColor = swatch.dataset.color;
+  document.querySelectorAll('.color-swatch').forEach(s => s.style.outline = '');
+  swatch.style.outline = '2px solid ' + state.selectedColor;
+});
+
+function filterBySubject(id) {
+  switchPage('notes');
+  document.getElementById('filterSubject').value = id;
+  renderNotes();
+}
+
+// ========================
+// NOTES
+// ========================
+function openNewNote() {
+  state.editingNoteId = null;
+  document.getElementById('modalTitle').textContent = '📝 New Note';
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteContent').value = '';
+  document.getElementById('noteTags').value = '';
+  document.getElementById('noteImportant').checked = false;
+  renderSubjects();
+  openModal('noteModal');
+}
+
+function openEditNote(id) {
+  const note = state.notes.find(n => n.id === id);
+  if(!note) return;
+  state.editingNoteId = id;
+  document.getElementById('modalTitle').textContent = '✏️ Edit Note';
+  document.getElementById('noteTitle').value = note.title;
+  document.getElementById('noteContent').value = note.content;
+  document.getElementById('noteTags').value = (note.tags || []).join(', ');
+  document.getElementById('noteImportant').checked = !!note.important;
+  renderSubjects();
+  document.getElementById('noteSubject').value = note.subject || '';
+  openModal('noteModal');
+}
+
+function saveNote() {
+  const title = document.getElementById('noteTitle').value.trim();
+  const content = document.getElementById('noteContent').value.trim();
+  if(!title) { toast('Please add a title', 'error'); return; }
+  if(!content) { toast('Please add some content', 'error'); return; }
+
+  const tags = document.getElementById('noteTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const subject = document.getElementById('noteSubject').value;
+  const important = document.getElementById('noteImportant').checked;
+
+  if(state.editingNoteId) {
+    const note = state.notes.find(n => n.id === state.editingNoteId);
+    Object.assign(note, { title, content, tags, subject, important, updatedAt: new Date().toISOString() });
+    toast('Note updated! ✅');
+  } else {
+    state.notes.unshift({ id: 'n' + Date.now(), title, content, tags, subject, important, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    toast('Note saved! 📝');
+  }
+  save();
+  closeModal('noteModal');
+  renderDashboard();
+  if(state.currentPage === 'notes') renderNotes();
+}
+
+function deleteNote(id) {
+  if(!confirm('Delete this note?')) return;
+  state.notes = state.notes.filter(n => n.id !== id);
+  save();
+  renderDashboard();
+  renderNotes();
+  toast('Note deleted', 'error');
+}
+
+function toggleImportant(id) {
+  const note = state.notes.find(n => n.id === id);
+  if(note) { note.important = !note.important; save(); renderDashboard(); renderNotes(); toast(note.important ? '⭐ Marked important' : 'Removed from important'); }
+}
+
+function renderNoteCard(note) {
+  const sub = state.subjects.find(s => s.id === note.subject);
+  const preview = renderHighlights(note.content.substring(0,200) + (note.content.length > 200 ? '…' : ''));
+  const tags = (note.tags || []).map(t => `<span class="tag" style="background:rgba(108,99,255,0.15);color:var(--accent)">${t}</span>`).join('');
+  const date = new Date(note.updatedAt || note.createdAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+  return `
+    <div class="note-card ${note.important?'important':''}" id="card-${note.id}">
+      ${note.important ? '<div class="important-badge">⭐ IMPORTANT</div>' : ''}
+      ${sub ? `<div style="font-size:11px;font-weight:600;color:${sub.color};margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px">${sub.name}</div>` : ''}
+      <div class="note-title">${note.title}</div>
+      <div class="note-body note-content-rendered">${preview}</div>
+      ${tags ? `<div style="margin-top:10px">${tags}</div>` : ''}
+      <div class="note-meta">
+        <span class="note-date">${date}</span>
+        <div class="note-actions">
+          <button class="icon-btn" title="View" onclick="viewNote('${note.id}')">👁️</button>
+          <button class="icon-btn" title="${note.important?'Unmark':'Mark important'}" onclick="toggleImportant('${note.id}')">${note.important?'⭐':'☆'}</button>
+          <button class="icon-btn" title="Edit" onclick="openEditNote('${note.id}')">✏️</button>
+          <button class="icon-btn" title="Delete" onclick="deleteNote('${note.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHighlights(text) {
+  return text.replace(/==(.*?)==/g, '<mark>$1</mark>');
+}
+
+function viewNote(id) {
+  const note = state.notes.find(n => n.id === id);
+  if(!note) return;
+  const sub = state.subjects.find(s => s.id === note.subject);
+  const date = new Date(note.updatedAt || note.createdAt).toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('viewModalContent').innerHTML = `
+    ${note.important ? '<div style="background:rgba(245,200,66,0.15);border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--gold)">⭐ Important Note</div>' : ''}
+    ${sub ? `<div style="font-size:11px;font-weight:700;color:${sub.color};text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">${sub.name}</div>` : ''}
+    <div style="font-family:var(--font-head);font-size:22px;font-weight:800;margin-bottom:8px">${note.title}</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">${date}</div>
+    <div style="font-size:14px;line-height:1.9;white-space:pre-wrap;color:var(--text)" class="note-content-rendered">${renderHighlights(note.content)}</div>
+    ${(note.tags||[]).length ? `<div style="margin-top:16px">${note.tags.map(t=>`<span class="tag" style="background:rgba(108,99,255,0.15);color:var(--accent)">${t}</span>`).join('')}</div>` : ''}
+  `;
+  openModal('viewModal');
+}
+
+let currentFilter = 'all';
+function setFilter(f) {
+  currentFilter = f;
+  document.getElementById('filterAll').style.background = f==='all' ? 'var(--accent)' : '';
+  document.getElementById('filterAll').style.color = f==='all' ? '#fff' : '';
+  document.getElementById('filterAll').style.borderColor = f==='all' ? 'var(--accent)' : '';
+  document.getElementById('filterImportant').style.background = f==='important' ? 'var(--gold)' : '';
+  document.getElementById('filterImportant').style.color = f==='important' ? '#111' : '';
+  renderNotes();
+}
+
+let searchQuery = '';
+function searchNotes(q) {
+  searchQuery = q.toLowerCase();
+  renderNotes();
+  if(state.currentPage === 'dashboard') renderDashboard();
+}
+
+function renderNotes() {
+  const grid = document.getElementById('notesGrid');
+  const subjectFilter = document.getElementById('filterSubject')?.value || '';
+  let notes = state.notes;
+  if(currentFilter === 'important') notes = notes.filter(n => n.important);
+  if(subjectFilter) notes = notes.filter(n => n.subject === subjectFilter);
+  if(searchQuery) notes = notes.filter(n => n.title.toLowerCase().includes(searchQuery) || n.content.toLowerCase().includes(searchQuery));
+  grid.innerHTML = notes.length ? notes.map(renderNoteCard).join('') : `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📭</div><h3>No notes found</h3><p>Create a new note to get started</p></div>`;
+}
+
+function renderDashboard() {
+  const important = state.notes.filter(n => n.important);
+  const recent = state.notes.slice(0,4);
+  document.getElementById('importantGrid').innerHTML = important.length ? important.map(renderNoteCard).join('') : '<p style="color:var(--muted);font-size:14px">No important notes yet. Mark notes with ⭐ to see them here.</p>';
+  document.getElementById('recentGrid').innerHTML = recent.length ? recent.map(renderNoteCard).join('') : `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">✍️</div><h3>No notes yet</h3><p>Create your first note to start studying!</p></div>`;
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="stat-num" style="color:var(--accent)">${state.notes.length}</div><div class="stat-label">Total Notes</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--gold)">${state.notes.filter(n=>n.important).length}</div><div class="stat-label">Important</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${state.subjects.length}</div><div class="stat-label">Subjects</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--accent2)">${state.media.length}</div><div class="stat-label">Media Files</div></div>
+  `;
+  renderSubjects();
+}
+
+// ========================
+// AI CHAT
+// ========================
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+
+  addChatMsg(msg, 'user');
+  input.value = '';
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div>';
+
+  // Add typing indicator
+  const typingId = 'typing-' + Date.now();
+  document.getElementById('chatMessages').insertAdjacentHTML('beforeend', `
+    <div class="chat-msg" id="${typingId}">
+      <div class="chat-avatar ai">🤖</div>
+      <div class="chat-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+    </div>
+  `);
+  scrollChat();
+
+  // Build context from notes
+  const notesContext = state.notes.length > 0
+    ? 'Here are the user\'s study notes:\n\n' + state.notes.slice(0, 15).map(n => `### ${n.title}\n${n.content}`).join('\n\n---\n\n')
+    : '';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a helpful, friendly AI study tutor. You help students understand concepts, answer questions, and support their learning. Be clear, encouraging, and educational. Use examples and analogies to explain difficult concepts. Format responses nicely with bullet points or numbered lists when helpful.
+
+${notesContext}
+
+When answering questions related to the user's notes, reference them specifically. Keep responses focused and educational.`,
+        messages: [{ role: 'user', content: msg }]
+      })
+    });
+    const data = await res.json();
+    document.getElementById(typingId)?.remove();
+    const reply = data.content?.[0]?.text || 'I\'m sorry, I couldn\'t generate a response. Please try again.';
+    addChatMsg(reply, 'ai');
+  } catch(e) {
+    document.getElementById(typingId)?.remove();
+    addChatMsg('Sorry, I ran into an error. Please check your connection and try again.', 'ai');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '➤';
+}
+
+function addChatMsg(text, role) {
+  const msgs = document.getElementById('chatMessages');
+  const formatted = text.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  msgs.insertAdjacentHTML('beforeend', `
+    <div class="chat-msg ${role}">
+      <div class="chat-avatar ${role}">${role==='ai'?'🤖':'👤'}</div>
+      <div class="chat-bubble">${formatted}</div>
+    </div>
+  `);
+  scrollChat();
+}
+
+function scrollChat() { const m = document.getElementById('chatMessages'); m.scrollTop = m.scrollHeight; }
+function handleChatKey(e) { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }
+
+// ========================
+// MEDIA
+// ========================
+function handleFileUpload(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      state.media.push({ id: 'm' + Date.now() + Math.random(), name: file.name, type: file.type, src: ev.target.result, addedAt: new Date().toISOString() });
+      save();
+      renderMedia();
+      toast('📎 ' + file.name + ' uploaded!');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('drag');
+  const files = Array.from(e.dataTransfer.files);
+  if(files.length) {
+    const dt = new DataTransfer();
+    files.forEach(f => dt.items.add(f));
+    document.getElementById('fileInput').files = dt.files;
+    handleFileUpload({target:{files:dt.files}});
+  }
+}
+
+function addVideoUrl() {
+  const url = document.getElementById('videoUrlInput').value.trim();
+  if(!url) { toast('Enter a URL', 'error'); return; }
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  const item = { id: 'm' + Date.now(), name: ytMatch ? 'YouTube Video' : url.substring(0,40)+'…', type: ytMatch ? 'youtube' : 'video/url', src: url, ytId: ytMatch?.[1], addedAt: new Date().toISOString() };
+  state.media.push(item);
+  save();
+  renderMedia();
+  document.getElementById('videoUrlInput').value = '';
+  toast('Video added! 🎬');
+}
+
+function deleteMedia(id) {
+  state.media = state.media.filter(m => m.id !== id);
+  save();
+  renderMedia();
+  toast('Media removed', 'error');
+}
+
+function renderMedia() {
+  const grid = document.getElementById('mediaGrid');
+  if(!state.media.length) { grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🖼️</div><h3>No media yet</h3><p>Upload images and videos to enrich your notes</p></div>`; return; }
+  grid.innerHTML = state.media.map(m => {
+    let thumb = '';
+    if(m.type?.startsWith('image')) thumb = `<img src="${m.src}" class="media-thumb" loading="lazy" onerror="this.style.display='none'">`;
+    else if(m.type === 'youtube') thumb = `<div class="media-thumb-placeholder"><img src="https://img.youtube.com/vi/${m.ytId}/hqdefault.jpg" style="width:100%;height:100%;object-fit:cover"></div>`;
+    else thumb = `<div class="media-thumb-placeholder">🎬</div>`;
+    return `
+      <div class="media-card">
+        <div onclick="previewMedia('${m.id}')" style="cursor:pointer">${thumb}</div>
+        <div class="media-info">
+          <div class="media-name">${m.name}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+            <div class="media-type">${m.type?.startsWith('image')?'Image':m.type==='youtube'?'YouTube':'Video'}</div>
+            <button class="icon-btn" onclick="deleteMedia('${m.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function previewMedia(id) {
+  const m = state.media.find(x => x.id === id);
+  if(!m) return;
+  let content = '';
+  if(m.type?.startsWith('image')) content = `<img src="${m.src}" style="max-width:100%;border-radius:10px">`;
+  else if(m.type === 'youtube') content = `<div class="video-embed-container"><iframe src="https://www.youtube.com/embed/${m.ytId}" allowfullscreen></iframe></div>`;
+  else content = `<video src="${m.src}" controls style="width:100%;border-radius:10px"></video>`;
+  document.getElementById('viewModalContent').innerHTML = `<div style="font-family:var(--font-head);font-weight:700;font-size:18px;margin-bottom:16px">${m.name}</div>${content}`;
+  openModal('viewModal');
+}
+
+// ========================
+// EXAM
+// ========================
+async function generateExam() {
+  const topic = document.getElementById('examTopic').value.trim();
+  const count = document.getElementById('examCount').value;
+  const difficulty = document.getElementById('examDifficulty').value;
+  const type = document.getElementById('examType').value;
+  const instructions = document.getElementById('examInstructions').value;
+
+  if(!topic) { toast('Enter a topic for the exam', 'error'); return; }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Generating with AI…';
+
+  const notesContext = state.notes.filter(n => n.title.toLowerCase().includes(topic.toLowerCase()) || n.content.toLowerCase().includes(topic.toLowerCase()) || !n.subject).slice(0,5).map(n=>`${n.title}: ${n.content}`).join('\n\n');
+
+  const typeInstruction = type === 'mcq' ? 'all multiple choice (4 options)' : type === 'truefalse' ? 'all True/False' : 'a mix of multiple choice and True/False';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Generate exactly ${count} ${difficulty} ${typeInstruction} questions about: ${topic}.
+${instructions ? 'Extra instructions: ' + instructions : ''}
+${notesContext ? 'Use these notes as reference:\n' + notesContext : ''}
+
+Return ONLY valid JSON, no markdown, no explanation:
+{"questions":[{"q":"question text","options":["A","B","C","D"],"answer":0,"explanation":"brief explanation"}]}
+
+For True/False: options should be ["True","False"], answer is 0 or 1.
+For MCQ: 4 options, answer is index 0-3.`
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    state.examData = parsed.questions;
+    state.userAnswers = {};
+    renderExam();
+  } catch(e) {
+    toast('Failed to generate exam. Try again.', 'error');
+    console.error(e);
+  }
+  btn.disabled = false;
+  btn.innerHTML = '⚡ Generate Exam with AI';
+}
+
+function renderExam() {
+  document.getElementById('examSetup').style.display = 'none';
+  document.getElementById('examActive').style.display = 'block';
+  document.getElementById('examResult').style.display = 'none';
+  document.getElementById('examProgress').style.width = '0%';
+
+  const container = document.getElementById('examQuestions');
+  container.innerHTML = state.examData.map((q, i) => `
+    <div class="exam-card">
+      <div class="question-num">Question ${i+1} of ${state.examData.length}</div>
+      <div class="question-text">${q.q}</div>
+      <div class="options" id="opts-${i}">
+        ${q.options.map((opt,j) => `<button class="option-btn" onclick="selectAnswer(${i},${j})">${String.fromCharCode(65+j)}) ${opt}</button>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectAnswer(qi, optIdx) {
+  state.userAnswers[qi] = optIdx;
+  const answered = Object.keys(state.userAnswers).length;
+  document.getElementById('examProgress').style.width = (answered / state.examData.length * 100) + '%';
+  // Visual feedback for selected
+  const opts = document.querySelectorAll(`#opts-${qi} .option-btn`);
+  opts.forEach((b,i) => {
+    b.style.borderColor = i === optIdx ? 'var(--accent)' : '';
+    b.style.background = i === optIdx ? 'rgba(108,99,255,0.15)' : '';
+  });
+}
+
+function submitExam() {
+  if(Object.keys(state.userAnswers).length < state.examData.length) {
+    if(!confirm(`You've only answered ${Object.keys(state.userAnswers).length} of ${state.examData.length} questions. Submit anyway?`)) return;
+  }
+  let correct = 0;
+  state.examData.forEach((q, i) => { if(state.userAnswers[i] === q.answer) correct++; });
+  const pct = Math.round(correct / state.examData.length * 100);
+  document.getElementById('examActive').style.display = 'none';
+  document.getElementById('examResult').style.display = 'block';
+  document.getElementById('scoreDisplay').textContent = pct + '%';
+  document.getElementById('scoreDisplay').style.color = pct >= 70 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--accent2)';
+  document.getElementById('scoreLabel').textContent = `${correct} correct out of ${state.examData.length} questions • ${pct >= 70 ? '🎉 Great job!' : pct >= 50 ? '👍 Good effort!' : '📚 Keep studying!'}`;
+  document.getElementById('reviewSection').style.display = 'none';
+}
+
+function reviewExam() {
+  const review = document.getElementById('reviewSection');
+  review.style.display = 'block';
+  review.innerHTML = state.examData.map((q, i) => {
+    const userAns = state.userAnswers[i];
+    const correct = q.answer;
+    return `
+      <div class="exam-card">
+        <div class="question-num">${userAns === correct ? '✅' : '❌'} Question ${i+1}</div>
+        <div class="question-text">${q.q}</div>
+        <div class="options">
+          ${q.options.map((opt,j) => `<button class="option-btn ${j===correct?'correct':j===userAns&&j!==correct?'wrong':''}" disabled>${String.fromCharCode(65+j)}) ${opt}${j===correct?' ✓':j===userAns&&j!==correct?' ✗':''}</button>`).join('')}
+        </div>
+        ${q.explanation ? `<div style="margin-top:12px;padding:12px;background:rgba(108,99,255,0.08);border-radius:8px;font-size:13px;color:var(--muted)">💡 ${q.explanation}</div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function resetExam() {
+  state.examData = null; state.userAnswers = {};
+  document.getElementById('examSetup').style.display = 'block';
+  document.getElementById('examActive').style.display = 'none';
+  document.getElementById('examResult').style.display = 'none';
+}
+
+// ========================
+// MODAL
+// ========================
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target === m) m.classList.remove('show'); }));
+
+// ========================
+// TOAST
+// ========================
+function toast(msg, type='success') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  t.innerHTML = (type==='success'?'✅':'❌') + ' ' + msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ========================
+// INIT
+// ========================
+renderSubjects();
+renderDashboard();
+</script>
+</body>
+</html>
